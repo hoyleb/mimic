@@ -1,0 +1,35 @@
+{
+  "format": "mimic-wire/v1",
+  "transport": "tcp",
+  "peer": {
+    "address": "192.0.2.40",
+    "port": 9876
+  },
+  "evidence": {
+    "source": "selected captured exchanges",
+    "unseen_behavior": "unknown",
+    "software_load_success": "not verified",
+    "redaction": "none; raw protocol bytes must stay private",
+    "stream": "0",
+    "connection_only": false
+  },
+  "events": [
+    {
+      "direction": "client",
+      "hex": "48454c4c4f2d413f"
+    },
+    {
+      "direction": "server",
+      "hex": "412d5245414459"
+    },
+    {
+      "direction": "client",
+      "hex": "56455253494f4e3f"
+    },
+    {
+      "direction": "server",
+      "hex": "312e30"
+    }
+  ],
+  "example": "fictional fixture; not captured from real hardware"
+}

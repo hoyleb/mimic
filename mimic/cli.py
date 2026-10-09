@@ -280,8 +280,16 @@ def main(argv=None):
     sv.add_argument("--port", type=int, default=8090)
     sv.set_defaults(func=cmd_device_serve)
 
+    from .startup import add_parser
+    add_parser(sub)
+
     args = p.parse_args(argv)
-    args.func(args)
+    try:
+        args.func(args)
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as exc:
+        if args.cmd == "startup":
+            p.exit(2, f"mimic startup: {exc}\n")
+        raise
 
 
 if __name__ == "__main__":

@@ -121,6 +121,27 @@ serial, Bluetooth and OS device enumeration need separate adapters. See
 [device emulation guide](docs/device-emulation.md) for examples, harness usage,
 contract semantics and limitations.
 
+## Software startup dependency checks
+
+If software refuses to load without a device/package, first identify the interface
+it checks. `mimic startup capture` passively observes a startup window on that
+machine; `analyze` and `compare` identify network candidates with the device
+present and absent. `startup learn` builds selected plaintext TCP/UDP replay
+profiles, and `startup serve` runs the stand-in before the software starts.
+
+```sh
+mimic startup interfaces
+mimic startup capture --interface INTERFACE --seconds 30 -o .mimic-device/startup.json
+mimic startup analyze .mimic-device/startup.json --machine MACHINE_IP \
+  -o .mimic-device/startup-report.json
+```
+
+Learning expected replies needs a successful baseline or a documented contract.
+Network traffic cannot establish package installation or OS USB device presence;
+those need separate shims/tracing. See the [startup emulation guide](docs/startup-emulation.md)
+for the C/M/A workflow, TCP/UDP learning/replay, endpoint mapping and a runnable
+fictional startup gate.
+
 ## Limitations
 
 Two auth schemes get in the way, for different reasons:
