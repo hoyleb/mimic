@@ -7,6 +7,7 @@ server can't tell your script from the app. Point it at a host and let the AI
 write an ergonomic client:  `mimic gen <host>`.
 """
 from .session import App, Session
+from .device import DeviceEmulator, RecordingSession
 
-__all__ = ["Session", "App"]
+__all__ = ["Session", "App", "DeviceEmulator", "RecordingSession"]
 __version__ = "0.1.0"

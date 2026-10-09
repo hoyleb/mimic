@@ -1,0 +1,30 @@
+{
+  "format": "mimic-network/v1",
+  "packets": [
+    {
+      "frame": 1,
+      "time": 1.0,
+      "src": "192.0.2.10",
+      "dst": "192.0.2.40",
+      "src_port": 45000,
+      "dst_port": 9876,
+      "transport": "tcp",
+      "protocols": [
+        "ip",
+        "tcp"
+      ],
+      "payload_hex": "",
+      "truncated": false,
+      "dns_queries": [],
+      "dns_addresses": [],
+      "stream": "0",
+      "seq": 0,
+      "payload_len": 0,
+      "syn": true,
+      "ack": false,
+      "reset": false,
+      "fin": false
+    }
+  ],
+  "example": "fictional fixture; not captured from real hardware"
+}

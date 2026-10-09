@@ -8,6 +8,7 @@
     mimic doctor            check your setup
 """
 import argparse
+import json
 import re
 import shutil
 import socket
@@ -193,6 +194,40 @@ def _class_name(source):
     return m.group(1) if m else None
 
 
+def cmd_device_learn(args):
+    from .device import openapi, profile_from_har, profile_from_mitm, save_profile
+    if args.har:
+        profile = profile_from_har(args.har, args.host)
+    else:
+        client, flows = _mitm_and_flows()
+        profile = profile_from_mitm(client, flows, args.host)
+    save_profile(profile, args.out)
+    if args.openapi:
+        with open(args.openapi, "w", encoding="utf-8") as f:
+            json.dump(openapi(profile), f, indent=2)
+            f.write("\n")
+    print(f"wrote {args.out}: {len(profile['observations'])} observed exchanges")
+    print("Unseen behaviour is unknown. Review captured personal/text/binary data before sharing.")
+
+
+def cmd_device_contract(args):
+    from .device import load_profile, openapi, save_profile
+    save_profile(openapi(load_profile(args.profile)), args.out)
+    print(f"wrote {args.out}")
+
+
+def cmd_device_serve(args):
+    from .device import DeviceEmulator, load_profile
+    server = DeviceEmulator(load_profile(args.profile)).server(args.bind, args.port)
+    print(f"device emulator: http://{args.bind}:{server.server_port} (offline replay; Ctrl-C to stop)", flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="mimic", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -227,8 +262,34 @@ def main(argv=None):
     up.add_argument("--codesign", help="signing identity for `objection patchipa`")
     up.set_defaults(func=unpin.cmd_unpin)
 
+    dp = sub.add_parser("device", help="learn and emulate an HTTP device API")
+    ds = dp.add_subparsers(dest="device_cmd", required=True)
+    dl = ds.add_parser("learn", help="export full captures and observed OpenAPI shapes")
+    dl.add_argument("host", help="exact captured hostname or IP (without scheme/port)")
+    dl.add_argument("--har", help="HAR with response content; otherwise reads live mitmweb")
+    dl.add_argument("-o", "--out", required=True, help="output device profile JSON")
+    dl.add_argument("--openapi", help="also write an observational OpenAPI 3.1 contract")
+    dl.set_defaults(func=cmd_device_learn)
+    dc = ds.add_parser("contract", help="export observed OpenAPI from a saved profile")
+    dc.add_argument("profile", help="device profile JSON")
+    dc.add_argument("-o", "--out", required=True, help="output OpenAPI JSON")
+    dc.set_defaults(func=cmd_device_contract)
+    sv = ds.add_parser("serve", help="run an offline local stand-in for the device")
+    sv.add_argument("profile", help="device profile JSON")
+    sv.add_argument("--bind", default="127.0.0.1", help="listen address (default: loopback)")
+    sv.add_argument("--port", type=int, default=8090)
+    sv.set_defaults(func=cmd_device_serve)
+
+    from .startup import add_parser
+    add_parser(sub)
+
     args = p.parse_args(argv)
-    args.func(args)
+    try:
+        args.func(args)
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as exc:
+        if args.cmd == "startup":
+            p.exit(2, f"mimic startup: {exc}\n")
+        raise
 
 
 if __name__ == "__main__":
