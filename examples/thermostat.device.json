@@ -1,0 +1,49 @@
+{
+  "format": "mimic-device/v1",
+  "host": "example-thermostat.local",
+  "evidence": {
+    "source": "fictional example; not real captured hardware",
+    "unseen_behavior": "unknown"
+  },
+  "observations": [],
+  "initial_state": {
+    "target_c": 20,
+    "connected": true
+  },
+  "rules": [
+    {
+      "method": "GET",
+      "path": "/api/device",
+      "response_json": {
+        "id": "demo-device",
+        "connected": {
+          "$ref": "/state/connected"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/target",
+      "request_json": {},
+      "set_state": {
+        "target_c": {
+          "$ref": "/request/target_c"
+        }
+      },
+      "response_json": {
+        "target_c": {
+          "$ref": "/state/target_c"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/target",
+      "response_json": {
+        "target_c": {
+          "$ref": "/state/target_c"
+        }
+      }
+    }
+  ]
+}
